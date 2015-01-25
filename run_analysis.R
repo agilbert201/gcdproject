@@ -49,9 +49,9 @@ readUCIDataSet <- function(set="train") {
         stop("Invalid set param for readUCIDataSet")
     }
     dirPath <- file.path(uciDir, set)
-    xPath <- file.path(dirPath, sprintf("X_%s_100.txt", set))
-    yPath <- file.path(dirPath, sprintf("y_%s_100.txt", set))
-    subjectPath <- file.path(dirPath, sprintf("subject_%s_100.txt", set))
+    xPath <- file.path(dirPath, sprintf("X_%s.txt", set))
+    yPath <- file.path(dirPath, sprintf("y_%s.txt", set))
+    subjectPath <- file.path(dirPath, sprintf("subject_%s.txt", set))
     message("Reading UCIDataSet ", set, ", file names: ", paste(xPath, yPath, subjectPath, sep=","))
 
     # read feature labels
@@ -75,11 +75,37 @@ readUCIDataSet <- function(set="train") {
     xData <- cbind(subject = subjectData$V1, xData)
 }
 
+buildMergedDataSet <- function () {
+    ## Read and combine train and test data
+    ##
+    ## Returns:
+    ##  the cleaned, merged set of data
+    trainData <- readUCIDataSet("train")
+    testData <- readUCIDataSet("test")
+    mergedDataSet <- rbind(trainData, testData)
+}
+
+buildSummaryDataSet <- function(mergedDataSet) {
+    ## Build a summary set of data from the merged data grouped by subject, activity
+    ## and with means computed for feature variables
+    ##
+    ## Returns:
+    ##  a data set which has averages for all features for each subject and activity
+
+    # group by subject and activity
+    bySubjectActivity <- group_by(mergedDataSet, subject, activity)
+    
+    # Compute avg of each feature variable for each activity and each subject
+    avgsBySubjectActivity <- summarise_each(bySubjectActivity, funs(mean))
+    
+    # Fix up the col names
+    colNames <- names(avgsBySubjectActivity)
+    avgNames <- sapply(colNames[3:68], function(x) sprintf("avg-%s", x), USE.NAMES = FALSE)
+    names(avgsBySubjectActivity) <- c("subject", "activity", avgNames)
+    avgsBySubjectActivity
+}
+
 init()
-
-# Merge training and test data sets
-trainData <- readUCIDataSet("train")
-testData <- readUCIDataSet("test")
-tidyDataSet <- rbind(trainData, testData)
-
-# Create 2nd data set with average of each variable for each activity and each subject
+mergedDataSet <- buildMergedDataSet()
+summaryDataSet <- buildSummaryDataSet(mergedDataSet)
+write.table(summaryDataSet, file.path(dataDir, "avgs_by_subject_activity.txt"), row.names = FALSE)

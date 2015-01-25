@@ -7,8 +7,9 @@ This project processes data set for human activity recognition using smartphone 
 The goal of the project is to process the original data set with following goals:
 
 1. Merge the test and training data
-2. Extract measurements for mean and std deviation
-3. Produce a data set consistent with [Tidy Data Principles](http://www.jstatsoft.org/v59/i10/paper)
+2. Extract features for mean and std deviation
+3. Summarize these features by subject and activity, calculating their averages
+4. Produce a resulting data set consistent with [Tidy Data Principles](http://www.jstatsoft.org/v59/i10/paper)
     
 ### Assumptions
 
@@ -18,4 +19,8 @@ Note that there are some measurements in the original data derived from a mean m
 
 Also note did not include meanFrequency variables for certain obeservations in frequency domain. For example "fBodyBodyGyroMag-meanFreq()" as again these were not viewed as equivalent to "fBodyBodyGyroMag-mean()", which
 is included in the tidy data set.
+
+### Actions
+
+Execute run-analysis.R. A summarized data set will be produced and written to the dir "data". It's contents are described in the CodeBook.
 
